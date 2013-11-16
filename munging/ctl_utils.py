@@ -49,6 +49,28 @@ def add_issue_columns(messages):
 		messages[issue] = pd.Series(issue_matrix[:,i])
 
 
+def add_duration_columns(conversations):
+        """Add columns to the Conversations data frame to represent durations:
+        how long a message spends in the queue, how long the conversation lasts,
+        and how long between a message comes in and the conselor responds.
+
+        This last value has some issues; in particular, it appears to be off by
+        4 hours by default, and even after adjusting by 4 hours, there are many
+        outliers where the queue time is before the first message time.
+        """
+        C = conversations
+        C['duration_queue'] = C['takenfromqueue'] - C['addedtoqueue']
+        C['duration_msg'] = C.last_msg - C.first_msg
+
+        # These are off by at least 4 hours
+        C['duration_to_first_resp'] = C.takenfromqueue - C.first_msg
+        C['duration_to_first_resp'] = C['duration_to_first_resp'].dropna().apply(lambda td: td + np.timedelta64(4, 'h'))
+
+        C['duration_to_first_resp_nonneg'] = C['duration_to_first_resp']
+        C['duration_to_first_resp_nonneg'][C['duration_to_first_resp_nonneg'] < 0] = np.nan
+
+        return C
+
 """
 Function to mark simultaneous conversations
 
