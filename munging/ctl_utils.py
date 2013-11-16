@@ -10,24 +10,31 @@ pip install sklearn
 import crisis.parsers
 
 import pandas as pd
-import locale
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def parse_messages(path='dk_message_level_131114.csv'):
     data = pd.read_csv(path,
-            parse_dates= [7,8,9, 23, 4],
-            converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,
-                         'specialist_id' : convert_to_int },
+            converters={ 'm_id': convert_to_int,
+                         'c_id': convert_to_int,
+                         'profile_id': convert_to_int,
+                         'specialist_id': convert_to_int,
+                         'conv_start': convert_to_date,
+                         'conv_end': convert_to_date,
+                         'first_msg': convert_to_date,
+                         'last_msg': convert_to_date,
+                         'addedtoqueue': convert_to_date,
+                         'takenfromqueue': convert_to_date},
             skiprows=[1],
             )
     return data
 
 def parse_conversations(path='dk_conversation_level_1311114.csv'):
     data = pd.read_csv(path,
-            #parse_dates= [7,8,9],
-            converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,
-                         'specialist_id' : convert_to_int,
+            converters={ 'm_id': convert_to_int,
+                         'c_id': convert_to_int,
+                         'profile_id': convert_to_int,
+                         'specialist_id': convert_to_int,
                          'conv_start': convert_to_date,
                          'conv_end': convert_to_date,
                          'first_msg': convert_to_date,
@@ -68,9 +75,10 @@ def add_issue_columns(messages):
 
 
 def add_duration_columns(conversations):
-        """Add columns to the Conversations data frame to represent durations:
+        """
+        Add columns to the Conversations data frame to represent durations:
         how long a message spends in the queue, how long the conversation lasts,
-        and how long between a message comes in and the conselor responds.
+        and how long between a message comes in and the counselor responds.
 
         This last value has some issues; in particular, it appears to be off by
         4 hours by default, and even after adjusting by 4 hours, there are many
