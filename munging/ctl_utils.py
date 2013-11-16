@@ -1,3 +1,13 @@
+"""
+
+To run:
+
+pip install pandas
+pip install sklearn
+
+"""
+
+
 import pandas as pd
 from sklearn.feature_extraction.text import CountVectorizer
 import locale
