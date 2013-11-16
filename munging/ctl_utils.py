@@ -14,18 +14,20 @@ import locale
 import numpy as np
 
 def parse_messages(path='dk_message_level_131114.csv'):
-	data = pd.read_csv(path, 
-parse_dates= [7,8,9, 23, 4],
-		converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,  'specialist_id' : convert_to_int }
-
+    data = pd.read_csv(path,
+            parse_dates= [7,8,9, 23, 4],
+            converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,
+                'specialist_id' : convert_to_int },
+            skiprows=[1],
 		)
 	return data
 
 def parse_conversations(path='dk_conversation_level_1311114.csv'):
 	data = pd.read_csv(path, 
 		parse_dates= [7,8,9],
-		converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,  'specialist_id' : convert_to_int }
-
+		converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,
+            'specialist_id' : convert_to_int },
+        skiprows=[1],
 		)
 	return data
 
