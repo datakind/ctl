@@ -51,7 +51,7 @@ def convert_to_date(x):
     x = crisis.parsers.caster(x)
     if not isinstance(x, datetime):
         x = np.nan
-    return x
+    return pd.to_datetime(x)
 
 
 """
