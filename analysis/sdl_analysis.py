@@ -94,5 +94,5 @@ for conversation_id in conversation_ids:
 
 num_chars_l = transpose_ragged_list(conversation_characters_per_message_over_messages, 20)
 pylab.figure()
-pylab.boxplot(num_chars_l)
+boxplot_fh = pylab.boxplot(num_chars_l)
 
