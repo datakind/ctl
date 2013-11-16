@@ -1,3 +1,8 @@
+import os
+import sys
+repo_path = '/opt/datakind/dlovell_ctl/'
+sys.path.append(repo_path)
+
 import datetime
 #
 import numpy
@@ -5,12 +10,35 @@ import pylab
 pylab.ion()
 pylab.show()
 #
-import ctl_utils as cu
+import munging.ctl_utils as cu
+import munging.file_utils as fu
 
 
 # import the ata
-conversations = cu.parse_conversations('../data/dk_conversation_level_1311114.csv')
-messages = cu.parse_messages('../data/dk_message_level_131114.csv')
+data_path = os.path.join(repo_path, 'data')
+#
+conversation_filename = os.path.join(data_path, 'dk_conversation_level_1311114.csv')
+conversation_pkl_filename = conversation_filename + '.pkl'
+conversations = None
+if os.path.isfile(conversation_pkl_filename):
+    print "using pickled conversations"
+    conversations = fu.unpickle(conversation_pkl_filename)
+else:
+    print "parsing and pickling conversations"
+    conversations = cu.parse_conversations(conversation_filename)
+    fu.pickle(conversations, conversation_pkl_filename)
+#
+message_filename = os.path.join(data_path, 'dk_message_level_131114.csv')
+message_pkl_filename = message_filename + '.pkl'
+messages = None
+if os.path.isfile(message_pkl_filename):
+    print "using pickled messages"
+    messages = fu.unpickle(message_pkl_filename)
+else:
+    print "parsing and pickling messages"
+    messages = cu.parse_messages(message_filename)
+    fu.pickle(messages, message_pkl_filename)
+
 
 # verify message, conversation ids increment sanely
 pylab.figure()
@@ -26,7 +54,7 @@ pylab.ylim(45000, 48001)
 
 pylab.figure()
 is_teen = messages.actor_type == 'MobileMessenger'
-messages.m_id.map(numpy.float).plot(linestyle='', marker='x', markersize=3)
+messages.m_id[is_teen].map(numpy.float).plot(linestyle='', marker='x', markersize=3)
 pylab.xlim(42000, 45000)
 pylab.ylim(45000, 48001)
 
@@ -82,17 +110,27 @@ def transpose_ragged_list(ragged_list, max_len):
         list_out.append(vector_i)
     return list_out
 
-conversation_ids = conversations.c_id.values
-conversation_characters_per_message_over_messages = []
-# conversation_characters_per_message_over_time = []
-for conversation_id in conversation_ids:
-    num_chars_list = get_conversation_num_chars_per_message(messages,
-            conversation_id)
-    if num_chars_list is None:
-        continue
-    conversation_characters_per_message_over_messages.append(num_chars_list)
+def generate_conversation_message_lengths(conversations, messages, max_length):
+    conversation_ids = conversations.c_id.values
+    conversation_message_lengths = []
+    for conversation_id in conversation_ids:
+        num_chars_list = get_conversation_num_chars_per_message(messages,
+                conversation_id)
+        if num_chars_list is None:
+            continue
+        conversation_message_lengths.append(num_chars_list)
+    conversation_message_lengths = transpose_ragged_list(conversation_message_lengths, max_length)
+    return conversation_message_lengths
 
-num_chars_l = transpose_ragged_list(conversation_characters_per_message_over_messages, 20)
+    
+conversation_message_length_filename = os.path.join(data_path, 'conversation_message_length.pkl.gz')
+if os.path.isfile(conversation_message_length_filename):
+    print "using pickled conversation_message_lengths"
+    conversation_message_lengths = fu.unpickle(conversation_message_length_filename)
+else:
+    print "parsing and pickling conversation_message_lengths"
+    conversation_message_lengths = generate_conversation_message_lengths(conversations, messages, 20)
+    fu.pickle(conversation_message_lengths, conversation_message_length_filename)
 pylab.figure()
-boxplot_fh = pylab.boxplot(num_chars_l)
+boxplot_fh = pylab.boxplot(conversation_message_lengths)
 
