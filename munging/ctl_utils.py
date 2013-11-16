@@ -113,5 +113,14 @@ def mark_simultaneous_conversations(conversations):
 	return conversations
 
 
+def add_suicide_column(C):
+    """Look for the string "uici" in the issue columns.
+    """
+    res = C.Q13_issues.str.contains('uici').fillna(False)
+    res[C.Q14_issues.str.contains('uici').fillna(False)] = True
+    res[C.Q15_presenting_issue.str.contains('uici').fillna(False)] = True
+    C['is_suicide_issue'] = res
+    return C
+
 if __name__ == '__main__':
 	data = parse_messages()
