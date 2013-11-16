@@ -119,7 +119,7 @@ def add_suicide_column(C):
     res = C.Q13_issues.str.contains('uici').fillna(False)
     res[C.Q14_issues.str.contains('uici').fillna(False)] = True
     res[C.Q15_presenting_issue.str.contains('uici').fillna(False)] = True
-    C['is_suicide_issue'] = res
+    C['is_suicide_issue'] = res.astype('bool')
     return C
 
 if __name__ == '__main__':
