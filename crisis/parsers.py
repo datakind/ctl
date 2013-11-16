@@ -3,6 +3,7 @@ Parsers and index enums for the Crisis Text Line data
 """
 import crisis.constants as constants
 
+import csv
 import datetime
 import itertools as its
 import logging
@@ -32,8 +33,6 @@ MessageIndex = type('MessageIndex', (object,), dict((z, i) for i, z in enumerate
 """
 actor id,,(int = counselor),"MobileMessenger indicates a teen, internal is our automated system or a counselor",message id,conversation id,character count,,,,"rated by teen. -1=bad, 1=good, 2=great",crisis center that responded,id of specialist,,was this a crisis conversation or not,"if not a crisis conversation, what was it?",what happened at the end of the conversation?,what issues did the teen mention?,describe other,what was the first or main issue mentioned by the teen?,how does the counselor think the teen was feeling,how is the counselor feeling overall,id of texter (client/visitor),first message sent by texter,last message sent by texter,time added,time taken by counselor
 """
-DELIMITER = ','
-CSV_PATTERN = re.compile(r'''((?:[^__DELIMITER__"']|"[^"]*"|'[^']*')+)'''.replace('__DELIMITER__', DELIMITER))
 
 def parse_date(date):
 	"""
@@ -105,19 +104,39 @@ def parse_line(line, counter=None):
 		c = counter.next()
 		if c % 1000 == 0:
 			LOGGER.debug("Read %d lines" % c)
-	sline = CSV_PATTERN.split(line.strip())[1::2]
-	return caster(sline)
+	return caster(line)
 
-def parse_file(the_file):
+def parse_file(the_file, filters=None):
+	reader = csv.reader(the_file)
 	output = []
 	counter = its.count()
-	return [parse_line(line, counter=counter) for line in the_file]
+	for line in reader:
+		parsed_line = parse_line(line, counter=counter)
+		if filters is not None:
+			if all(this_filter(parsed_line) for this_filter in filters):
+				output.append(parsed_line)
+		else:
+			output.append(parsed_line)
+	return output
 
-def get_files():
+def filter_automated_messages(line):
+	"""
+	If the parsed message line represents an automated message, return False.
+	Else True.
+	"""
+	if line[MessageIndex.actor_type] == 'Internal':
+		return line[MessageIndex.a_id] != 1
+	return True
+
+def get_files(message_filters=None, conversation_filters=None):
+	"""
+	Return the parsed files as lists of convenience tuples. If filters are
+	provided, filter the lines.
+	"""
 	with open(constants.CONVERSATION_DATA_FILENAME, 'r') as the_file:
-		conversation_data = parse_file(the_file)
+		conversation_data = parse_file(the_file, filters=conversation_filters)
 
 	with open(constants.MESSAGE_DATA_FILENAME, 'r') as the_file:
-		message_data = parse_file(the_file)
+		message_data = parse_file(the_file, filters=message_filters)
 
 	return conversation_data, message_data

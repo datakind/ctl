@@ -20,7 +20,7 @@ class TestParsers(unittest.TestCase):
 						undertest.parse_date_short(date))
 
 	def test_parse_line(self):
-		line = "1,2,3"
+		line = ["1","2","3"]
 		actual = undertest.parse_line(line)
 		expected = [1,2,3]
 		self.assertTrue(all(x == y for x, y in zip(expected, actual)))
