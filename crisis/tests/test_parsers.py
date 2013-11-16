@@ -14,5 +14,10 @@ class TestParsers(unittest.TestCase):
 		self.assertEqual(datetime.datetime(2013, 8, 5, 16, 14),
 						undertest.parse_date(date))
 
+	def test_part_date_short(self):
+		date  = '8/5/13 16:14'
+		self.assertEqual(datetime.datetime(2013, 8, 5, 16, 14),
+						undertest.parse_date_short(date))
+
 if __name__ == '__main__':
 	unittest.main()

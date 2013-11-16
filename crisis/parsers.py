@@ -13,6 +13,7 @@ LOGGER = logging.getLogger(__name__)
 
 dt = datetime.datetime
 DATE_FMT = '%m/%d/%Y %H:%M'
+DATE_FMT_SHORT = '%m/%d/%y %H:%M'
 
 type_list = 'a_id,profile_id,area_code,actor_type,m_id,c_id,msg_chars,msg_time,conv_start,conv_end,conv_rating,crisis_center_id,specialist_id,specialist_gender,Q2_conv_type,Q3_conv_type,Q8_conv_resolution,Q13_issues,Q14_issues,Q15_presenting_issue,Q36_visitor_feeling,Q37_counselor_feeling2,texter_id,first_msg,last_msg,addedtoqueue,takenfromqueue'
 type_list = type_list.split(',')
@@ -37,6 +38,13 @@ def parse_date(date):
 	it.
 	"""
 	return dt.strptime(date, DATE_FMT)
+
+def parse_date_short(date):
+	"""
+	Given a date in the M/D/Y H:M format, return a datetime object representing
+	it.
+	"""
+	return dt.strptime(date, DATE_FMT_SHORT)
 
 def caster(x):
 	"""
@@ -77,6 +85,11 @@ def caster(x):
 
 		try:
 			return parse_date(x)
+		except ValueError:
+			pass
+
+		try:
+			return parse_date_short(x)
 		except ValueError:
 			pass
 
