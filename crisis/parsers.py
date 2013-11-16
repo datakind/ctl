@@ -6,6 +6,7 @@ import crisis.constants as constants
 import datetime
 import itertools as its
 import logging
+import re
 import xlrd
 
 logging.basicConfig(level=logging.DEBUG)
@@ -31,6 +32,8 @@ MessageIndex = type('MessageIndex', (object,), dict((z, i) for i, z in enumerate
 """
 actor id,,(int = counselor),"MobileMessenger indicates a teen, internal is our automated system or a counselor",message id,conversation id,character count,,,,"rated by teen. -1=bad, 1=good, 2=great",crisis center that responded,id of specialist,,was this a crisis conversation or not,"if not a crisis conversation, what was it?",what happened at the end of the conversation?,what issues did the teen mention?,describe other,what was the first or main issue mentioned by the teen?,how does the counselor think the teen was feeling,how is the counselor feeling overall,id of texter (client/visitor),first message sent by texter,last message sent by texter,time added,time taken by counselor
 """
+DELIMITER = ','
+CSV_PATTERN = re.compile(r'''((?:[^__DELIMITER__"']|"[^"]*"|'[^']*')+)'''.replace('__DELIMITER__', DELIMITER))
 
 def parse_date(date):
 	"""
@@ -102,7 +105,7 @@ def parse_line(line, counter=None):
 		c = counter.next()
 		if c % 1000 == 0:
 			LOGGER.debug("Read %d lines" % c)
-	sline = line.strip().split(',')
+	sline = CSV_PATTERN.split(line.strip())[1::2]
 	return caster(sline)
 
 def parse_file(the_file):
