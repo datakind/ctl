@@ -1,8 +1,5 @@
 import os
-import sys
-repo_path = '/opt/datakind/dlovell_ctl/'
-sys.path.append(repo_path)
-
+#
 import numpy
 import pylab
 pylab.ion()
