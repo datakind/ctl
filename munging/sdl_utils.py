@@ -40,19 +40,6 @@ def get_conversation_message_lengths(conversation):
     values = conversation.msg_chars.values
     return numpy.array(values, dtype=int)
 
-def get_conversation_num_chars_per_message(messages, conversation_id):
-    num_chars_list = None
-    try:
-        messages_i = get_conversation_messages(messages, conversation_id)
-        msg_times = messages_i.msg_time.map(convert_msg_time).values
-        assert(is_sorted(msg_times))
-        values = messages_i.msg_chars.values
-        values = numpy.array(values, dtype=int)
-        num_chars_list = values
-    except Exception, e:
-        pass
-    return num_chars_list
-
 def transpose_ragged_list(ragged_list, max_len):
     num_lists = len(ragged_list)
     arr = numpy.zeros((num_lists, max_len), dtype=numpy.float) * numpy.nan
