@@ -12,16 +12,15 @@ import matplotlib.gridspec as gridspec
 import munging.ctl_utils as cu
 import munging.file_utils as fu
 import munging.sdl_utils as su
+import crisis.constants as C
 
 
 # import the data
-data_path = os.path.join(repo_path, 'data')
-#
-conversation_filename = os.path.join(data_path, 'dk_conversation_level_1311114.csv')
+conversation_filename = os.path.join(C.this_repo_dir, C.CONVERSATION_DATA_FILENAME)
 conversations = fu.process_or_unpickle(conversation_filename, cu.parse_conversations) 
 conversation_ids = conversations.c_id.values
 #
-message_filename = os.path.join(data_path, 'dk_message_level_131114.csv')
+message_filename = os.path.join(C.this_repo_dir, C.MESSAGE_DATA_FILENAME)
 messages = fu.process_or_unpickle(message_filename, cu.parse_messages)
 teen_messages = su.filter_dataframe_rows(messages, su.is_teen)
 counselor_messages = su.filter_dataframe_rows(messages, su.is_counselor)
