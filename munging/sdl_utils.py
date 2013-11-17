@@ -74,6 +74,8 @@ def generate_conversation_message_lengths(messages, conversation_ids, max_length
 
 is_teen = lambda message: message['actor_type'] == 'MobileMessenger'
 is_counselor = lambda message: message['actor_type'] == 'Internal'
+is_good = lambda message: message['conv_rating'] != -1
+is_bad = lambda message: message['conv_rating'] == -1
 
 def filter_dataframe_rows(dataframe, func):
     return dataframe[dataframe.apply(func, axis=1)]
