@@ -121,6 +121,23 @@ def mark_simultaneous_conversations(conversations):
 	return conversations
 
 
+def build_conversation_count_matrix(conv):
+    """
+    Constructs an admittedly large matrix of how many conversations a given counselor has going on at a given time
+    """
+    time_index = pd.date_range(conv.conv_start.min(), conv.conv_end.max(), freq='1min')
+    counselors = conv.specialist_id.unique()
+    conversation_count_matrix = pd.DataFrame(0, index=time_index, columns=counselors)
+    for ix, row in conv.iterrows():
+        start_time = row['conv_start']
+        end_time = row['conv_end']
+        counselor = row['specialist_id']
+        if type(end_time) == datetime: # some NaN end times in there
+            conversation_count_matrix[counselor][start_time:end_time] += 1
+
+    return conversation_count_matrix
+
+
 def add_suicide_column(C):
     """Look for the string "uici" in the issue columns.
     """
