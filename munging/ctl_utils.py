@@ -13,6 +13,8 @@ import pandas as pd
 import numpy as np
 from datetime import datetime
 
+# TODO could perhaps use the same processing method for both conversation and message files given they have same format?
+
 def parse_messages(path='dk_message_level_131114.csv'):
     data = pd.read_csv(path,
             converters={ 'm_id': convert_to_int,
