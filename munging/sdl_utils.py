@@ -36,7 +36,7 @@ def conversation_apply(messages, conversation_ids, func):
         conversation_values.append(conversation_value)
     return conversation_values
 
-def get_conversation_msg_lengths(conversation):
+def get_conversation_message_lengths(conversation):
     values = conversation.msg_chars.values
     return numpy.array(values, dtype=int)
 
@@ -68,13 +68,7 @@ def transpose_ragged_list(ragged_list, max_len):
     return list_out
 
 def generate_conversation_message_lengths(messages, conversation_ids, max_length):
-    conversation_message_lengths = []
-    for conversation_id in conversation_ids:
-        num_chars_list = get_conversation_num_chars_per_message(messages,
-                conversation_id)
-        if num_chars_list is None:
-            continue
-        conversation_message_lengths.append(num_chars_list)
+    conversation_message_lengths = conversation_apply(messages, conversation_ids, get_conversation_message_lengths)
     conversation_message_lengths = transpose_ragged_list(conversation_message_lengths, max_length)
     return conversation_message_lengths
 
