@@ -122,5 +122,11 @@ def add_suicide_column(C):
     C['is_suicide_issue'] = res.astype('bool')
     return C
 
+
+def nano_to_sec(v):
+    """Convert nanosecond numbers to seconds
+    """
+    return v / 1000. / 1000. / 1000.
+
 if __name__ == '__main__':
 	data = parse_messages()
