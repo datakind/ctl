@@ -20,6 +20,8 @@
 import cPickle
 import gzip
 import os
+#
+import pandas
 
 
 def is_gz(filename):
@@ -55,3 +57,16 @@ def process_or_unpickle(filename, func):
         ret_var = func(filename)
         pickle(ret_var, pkl_filename)
     return ret_var
+
+
+def process_or_read_hdf(filename, func, key):
+    h5_filename = filename + '.h5'
+    ret_F = None
+    if os.path.isfile(h5_filename):
+        print 'using h5 file: %s' % h5_filename
+        ret_F = pandas.read_hdf(h5_filename, key)
+    else:
+        print 'processing and storing %s' % filename
+        ret_F = func(filename)
+        ret_F.to_hdf(h5_filename, key)
+    return ret_F
