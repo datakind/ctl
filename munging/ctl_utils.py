@@ -138,6 +138,21 @@ def build_conversation_count_matrix(conv):
     return conversation_count_matrix
 
 
+def get_conversation_overlap_boolean_series(conv):
+    conversation_count_matrix = build_conversation_count_matrix(conv)
+
+    def has_other_conversations_going_on(row):
+        start_time = row['conv_start']
+        end_time = row['conv_end']
+        counselor = row['specialist_id']
+        if type(end_time) == datetime:
+            return conversation_count_matrix[counselor][start_time:end_time].max() > 1
+        else:
+            return False # in case of bad data, default to assuming nothing else going on
+
+    return conv.apply(has_other_conversations_going_on, axis=1)
+
+
 def add_suicide_column(C):
     """Look for the string "uici" in the issue columns.
     """
