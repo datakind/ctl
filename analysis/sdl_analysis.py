@@ -14,11 +14,12 @@ import crisis.constants as C
 
 # import the data
 conversation_filename = os.path.join(C.this_repo_dir, C.CONVERSATION_DATA_FILENAME)
-conversations = fu.process_or_unpickle(conversation_filename, cu.parse_conversations) 
+conversations = fu.process_or_read_hdf(conversation_filename, cu.parse_conversations, 'conversations')
+message_filename = os.path.join(C.this_repo_dir, C.MESSAGE_DATA_FILENAME)
+messages = fu.process_or_read_hdf(message_filename, cu.parse_messages, 'messages')
+#
 conversation_ids = conversations.c_id.values
 #
-message_filename = os.path.join(C.this_repo_dir, C.MESSAGE_DATA_FILENAME)
-messages = fu.process_or_unpickle(message_filename, cu.parse_messages)
 teen_messages = su.filter_dataframe_rows(messages, su.is_teen)
 counselor_messages = su.filter_dataframe_rows(messages, su.is_counselor)
 #
