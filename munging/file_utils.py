@@ -44,3 +44,14 @@ def unpickle(filename, dir=''):
     with opener(full_filename, 'rb') as fh:
         variable = cPickle.load(fh)
     return variable
+
+def process_or_unpickle(filename, func):
+    pkl_filename = filename + '.pkl'
+    if os.path.isfile(pkl_filename):
+        print 'using pickled file: %s' % pkl_filename
+        ret_var = unpickle(pkl_filename)
+    else:
+        print 'processing and pickling %s' % filename
+        ret_var = func(filename)
+        pickle(ret_var, pkl_filename)
+    return ret_var
