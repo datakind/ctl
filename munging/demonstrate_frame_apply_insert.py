@@ -19,12 +19,27 @@ def get_conversation_num_messages(conversation_series):
     conversation_messages = su.get_conversation_messages(messages, conversation_id)
     return len(conversation_messages)
 
+def get_conversation_duration(conversation_series):
+    return conversation_series['conv_end'] - conversation_series['conv_start']
 
-columns_truncated = conversations.columns[:6]
-conversations_truncated = conversations[:6].reindex(columns=columns_truncated)
+
+func_name_tuples = [
+        (get_conversation_num_messages, 'num_messages'),
+        (get_conversation_duration, 'conversation_duration'),
+        ]
+
+
+columns_truncated = conversations.columns[:11]
+conversations_truncated = conversations[:11].reindex(columns=columns_truncated)
+#
 print conversations_truncated
 conversations_truncated.to_csv('before.csv')
-su.frame_apply_insert(conversations_truncated, get_conversation_num_messages, 'num_messages')
+#
+for (func, name) in func_name_tuples:
+    su.frame_apply_insert(conversations_truncated, func, name)
+#
 print conversations_truncated
 conversations_truncated.to_csv('after.csv')
+
+
 
