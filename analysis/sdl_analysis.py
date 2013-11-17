@@ -83,6 +83,18 @@ def get_conversation_messages(messages, conversation_id):
     is_this_conversation = messages.c_id == conversation_id
     return messages[is_this_conversation]
 
+def conversation_apply(messages, conversation_ids, func):
+    conversation_values = []
+    for conversation_id in conversation_ids:
+        messages_i = get_conversation_messages(messages, conversation_id)
+        conversation_value = func(messages_i)
+        conversation_values.append(conversation_value)
+    return conversation_values
+
+def get_conversation_msg_lengths(conversation):
+    values = conversation.msg_chars.values
+    return numpy.array(values, dtype=int)
+
 def get_conversation_num_chars_per_message(messages, conversation_id):
     num_chars_list = None
     try:
@@ -110,8 +122,9 @@ def transpose_ragged_list(ragged_list, max_len):
         list_out.append(vector_i)
     return list_out
 
-def generate_conversation_message_lengths(conversations, messages, max_length):
-    conversation_ids = conversations.c_id.values
+conversation_ids = conversations.c_id.values
+
+def generate_conversation_message_lengths(messages, conversation_ids, max_length):
     conversation_message_lengths = []
     for conversation_id in conversation_ids:
         num_chars_list = get_conversation_num_chars_per_message(messages,
@@ -122,15 +135,48 @@ def generate_conversation_message_lengths(conversations, messages, max_length):
     conversation_message_lengths = transpose_ragged_list(conversation_message_lengths, max_length)
     return conversation_message_lengths
 
-    
+is_teen = lambda message: message['actor_type'] == 'MobileMessenger'
+is_counselor = lambda message: message['actor_type'] == 'Internal'
+
+def filter_dataframe_rows(dataframe, func):
+    return dataframe[dataframe.apply(func, axis=1)]
+
+
+truncate_conversation_to = 20
 conversation_message_length_filename = os.path.join(data_path, 'conversation_message_length.pkl.gz')
 if os.path.isfile(conversation_message_length_filename):
     print "using pickled conversation_message_lengths"
     conversation_message_lengths = fu.unpickle(conversation_message_length_filename)
 else:
     print "parsing and pickling conversation_message_lengths"
-    conversation_message_lengths = generate_conversation_message_lengths(conversations, messages, 20)
+    conversation_message_lengths = generate_conversation_message_lengths(
+            messages, conversation_ids, truncate_conversation_to)
     fu.pickle(conversation_message_lengths, conversation_message_length_filename)
+
 pylab.figure()
 boxplot_fh = pylab.boxplot(conversation_message_lengths)
 
+# 
+# import matplotlib.gridspec as gridspec
+# pylab.figure()
+# gs = gridspec.GridSpec(2,4)
+# ax1 = pylab.subplot(gs[0, 1:-1])
+# ax2 = pylab.subplot(gs[1,:2])
+# ax3 = pylab.subplot(gs[1,2:])
+# #
+# ax1.plot(range(3))
+# ax2.plot(range(3, 6))
+# ax3.plot(range(6, 9))
+# 
+# fh1 = ax1.boxplot(conversation_message_lengths)
+# #
+# teen_messages_subset = filter_dataframe_rows(messages, is_teen)
+# teen_conversation_message_lengths = generate_conversation_message_lengths(
+#         teen_messages_subset, conversation_ids, 20)
+# fh2 = ax2.boxplot(teen_conversation_message_lengths)
+# #
+# counselor_messages_subset = filter_dataframe_rows(messages, is_counselor)
+# counselor_conversation_message_lengths = generate_conversation_message_lengths(
+#         counselor_messages_subset, conversation_ids, 20)
+# fh3 = ax3.boxplot(counselor_conversation_message_lengths)
+# 
