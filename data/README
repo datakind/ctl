@@ -1,0 +1,4 @@
+This is a placeholder directory. Some of the parsers and constants in this
+repos assume that the data is in this directory. Unfortuantely, the data is
+a bit sensitive, so it won't be hosted in the github repo. But put it here
+and magic will happen.
