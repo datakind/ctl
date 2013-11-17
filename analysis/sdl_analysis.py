@@ -5,6 +5,7 @@ import pylab
 pylab.ion()
 pylab.show()
 import matplotlib.gridspec as gridspec
+import pandas
 #
 import munging.ctl_utils as cu
 import munging.file_utils as fu
@@ -151,4 +152,15 @@ bp_fh = ax3.boxplot(counselor_bad_conversation_message_lengths)
 ax3.set_ylim((0, 300))
 t_fh = pylab.title('counselor bad message lengths')
 pylab.savefig('counselor_unrated_good_bad_message_length_boxplots')
+
+counts = pandas.DataFrame({
+    'all': map(len, counselor_conversation_message_lengths),
+    'unrated': map(len, counselor_unrated_conversation_message_lengths),
+    'good': map(len, counselor_good_conversation_message_lengths),
+    'bad': map(len, counselor_bad_conversation_message_lengths),
+    })
+counts.plot(linestyle='steps-post')
+pylab.xlabel('#messages')
+pylab.ylabel('num of conversations with #messages')
+pylab.title('analysis of conversation length broken down by rating')
 
