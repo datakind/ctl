@@ -1,25 +1,5 @@
-import os
-import datetime
-#
 import numpy
 
-
-def minimalist_xldate_as_datetime(xldate, datemode):
-    # datemode: 0 for 1900-based, 1 for 1904-based
-    base = datetime.datetime(1899, 12, 30)
-    additional = datetime.timedelta(days=xldate + 1462 * datemode)
-    return base + additional
-
-def convert_datestr(datestr):
-    return datetime.datetime.strptime(datestr, '%m/%d/%Y %H:%M')
-
-def convert_msg_time(datestr):
-    date = None
-    try:
-        date = convert_datestr(datestr)
-    except Exception, e:
-        date = minimalist_xldate_as_datetime(float(datestr), 0)
-    return date
 
 def is_sorted(in_list):
     return all(in_list[i] <= in_list[i+1] for i in xrange(len(in_list)-1))
@@ -27,6 +7,10 @@ def is_sorted(in_list):
 def get_conversation_messages(messages, conversation_id):
     is_this_conversation = messages.c_id == conversation_id
     return messages[is_this_conversation]
+
+def frame_apply_insert(frame, func, name, axis=1):
+    series = frame.apply(func, axis=axis)
+    frame[name] = series
 
 def conversation_apply(messages, conversation_ids, func):
     conversation_values = []
