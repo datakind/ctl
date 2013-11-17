@@ -10,24 +10,33 @@ pip install sklearn
 import crisis.parsers
 
 import pandas as pd
-import locale
 import numpy as np
-from datetime import datetime, timedelta
+from datetime import datetime
+
+# TODO could perhaps use the same processing method for both conversation and message files given they have same format?
 
 def parse_messages(path='dk_message_level_131114.csv'):
     data = pd.read_csv(path,
-            parse_dates= [7,8,9, 23, 4],
-            converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,
-                         'specialist_id' : convert_to_int },
+            converters={ 'm_id': convert_to_int,
+                         'c_id': convert_to_int,
+                         'profile_id': convert_to_int,
+                         'specialist_id': convert_to_int,
+                         'conv_start': convert_to_date,
+                         'conv_end': convert_to_date,
+                         'first_msg': convert_to_date,
+                         'last_msg': convert_to_date,
+                         'addedtoqueue': convert_to_date,
+                         'takenfromqueue': convert_to_date},
             skiprows=[1],
             )
     return data
 
 def parse_conversations(path='dk_conversation_level_1311114.csv'):
     data = pd.read_csv(path,
-            #parse_dates= [7,8,9],
-            converters={ 'm_id' : convert_to_int, 'c_id' : convert_to_int,
-                         'specialist_id' : convert_to_int,
+            converters={ 'm_id': convert_to_int,
+                         'c_id': convert_to_int,
+                         'profile_id': convert_to_int,
+                         'specialist_id': convert_to_int,
                          'conv_start': convert_to_date,
                          'conv_end': convert_to_date,
                          'first_msg': convert_to_date,
@@ -68,9 +77,10 @@ def add_issue_columns(messages):
 
 
 def add_duration_columns(conversations):
-        """Add columns to the Conversations data frame to represent durations:
+        """
+        Add columns to the Conversations data frame to represent durations:
         how long a message spends in the queue, how long the conversation lasts,
-        and how long between a message comes in and the conselor responds.
+        and how long between a message comes in and the counselor responds.
 
         This last value has some issues; in particular, it appears to be off by
         4 hours by default, and even after adjusting by 4 hours, there are many
@@ -111,6 +121,38 @@ def mark_simultaneous_conversations(conversations):
 			if not max_end or end_time >= max_end:
 				max_end = end_time
 	return conversations
+
+
+def build_conversation_count_matrix(conv):
+    """
+    Constructs an admittedly large matrix of how many conversations a given counselor has going on at a given time
+    """
+    time_index = pd.date_range(conv.conv_start.min(), conv.conv_end.max(), freq='1min')
+    counselors = conv.specialist_id.unique()
+    conversation_count_matrix = pd.DataFrame(0, index=time_index, columns=counselors)
+    for ix, row in conv.iterrows():
+        start_time = row['conv_start']
+        end_time = row['conv_end']
+        counselor = row['specialist_id']
+        if type(end_time) == datetime: # some NaN end times in there
+            conversation_count_matrix[counselor][start_time:end_time] += 1
+
+    return conversation_count_matrix
+
+
+def get_conversation_overlap_boolean_series(conv):
+    conversation_count_matrix = build_conversation_count_matrix(conv)
+
+    def has_other_conversations_going_on(row):
+        start_time = row['conv_start']
+        end_time = row['conv_end']
+        counselor = row['specialist_id']
+        if type(end_time) == datetime:
+            return conversation_count_matrix[counselor][start_time:end_time].max() > 1
+        else:
+            return False # in case of bad data, default to assuming nothing else going on
+
+    return conv.apply(has_other_conversations_going_on, axis=1)
 
 
 def add_suicide_column(C):
