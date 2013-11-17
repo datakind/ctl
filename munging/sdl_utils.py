@@ -8,6 +8,10 @@ def get_conversation_messages(messages, conversation_id):
     is_this_conversation = messages.c_id == conversation_id
     return messages[is_this_conversation]
 
+def frame_apply_insert(frame, func, name, axis=1):
+    series = frame.apply(func, axis=axis)
+    frame[name] = series
+
 def conversation_apply(messages, conversation_ids, func):
     conversation_values = []
     for conversation_id in conversation_ids:
